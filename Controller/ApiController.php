@@ -40,11 +40,14 @@ class ApiController
     /** @DI\Inject("jms_translation.config_factory") */
     private $configFactory;
 
-    /** @DI\Inject */
-    private $request;
-
     /** @DI\Inject("jms_translation.updater") */
     private $updater;
+
+	public function __construct($configFactory, $updater)
+	{
+		$this->configFactory = $configFactory;
+		$this->loader        = $loader;
+	}
 
     /**
      * @Route("/configs/{config}/domains/{domain}/locales/{locale}/messages",

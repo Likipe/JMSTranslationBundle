@@ -25,6 +25,8 @@ use JMS\DiExtraBundle\Annotation as DI;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
 use Symfony\Component\Translation\MessageCatalogue;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 
 /**
  * Translate Controller.
@@ -33,30 +35,32 @@ use Symfony\Component\Translation\MessageCatalogue;
  */
 class TranslateController
 {
-    /** @DI\Inject */
-    private $request;
-
-    /** @DI\Inject("jms_translation.config_factory") */
     private $configFactory;
 
-    /** @DI\Inject("jms_translation.loader_manager") */
     private $loader;
 
-    /** @DI\Inject("service_container") */
     private $container;
 
-    /** @DI\Inject("%jms_translation.source_language%") */
     private $sourceLanguage;
+
+	public function __construct($configFactory, $loader, $container, $templating, $sourceLanguage)
+	{
+		$this->configFactory  = $configFactory;
+		$this->loader         = $loader;
+		$this->container      = $container;
+		$this->sourceLanguage = $sourceLanguage;
+		$this->templating     = $templating;
+	}
 
     /**
      * @Route("/", name="jms_translation_index", options = {"i18n" = false})
      * @Template
      * @param string $config
      */
-    public function indexAction()
+    public function indexAction(Request $request)
     {
         $configs = $this->configFactory->getNames();
-        $config = $this->request->query->get('config') ?: reset($configs);
+        $config = $request->query->get('config') ?: reset($configs);
         if (!$config) {
             throw new RuntimeException('You need to configure at least one config under "jms_translation.configs".');
         }
@@ -68,13 +72,13 @@ class TranslateController
         }
 
         $domains = array_keys($files);
-        $domain = $this->request->query->get('domain') ?: reset($domains);
-        if ((!$domain = $this->request->query->get('domain')) || !isset($files[$domain])) {
+        $domain = $request->query->get('domain') ?: reset($domains);
+        if ((!$domain = $request->query->get('domain')) || !isset($files[$domain])) {
             $domain = reset($domains);
         }
 
         $locales = array_keys($files[$domain]);
-        if ((!$locale = $this->request->query->get('locale')) || !isset($files[$domain][$locale])) {
+        if ((!$locale = $request->query->get('locale')) || !isset($files[$domain][$locale])) {
             $locale = reset($locales);
         }
 
@@ -115,7 +119,7 @@ class TranslateController
             $existingMessages[$id] = $message;
         }
 
-        return array(
+        return new Response($this->templating->render('JMSTranslationBundle:Translate:index.html.twig', array(
             'selectedConfig' => $config,
             'configs' => $configs,
             'selectedDomain' => $domain,
@@ -129,6 +133,6 @@ class TranslateController
             'isWriteable' => is_writeable($files[$domain][$locale][1]),
             'file' => (string) $files[$domain][$locale][1],
             'sourceLanguage' => $this->sourceLanguage,
-        );
+        )));
     }
 }
