@@ -3,6 +3,6 @@ jms_translation_index:
   defaults: { _controller: jms_translation.controller.translate:indexAction }
 jms_translation_update_message:
   pattern: /api/configs/{config}/domains/{domain}/locales/{locale}/messages
-  defaults: { _controller: jms_translation.controller.api:indexAction, id: null }
+  defaults: { _controller: jms_translation.controller.api:updateMessageAction, id: null }
   requirements: { _method: PUT }
 

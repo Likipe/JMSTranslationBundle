@@ -46,7 +46,7 @@ class ApiController
 	public function __construct($configFactory, $updater)
 	{
 		$this->configFactory = $configFactory;
-		$this->loader        = $loader;
+		$this->updater       = $updater;
 	}
 
     /**
@@ -75,7 +75,7 @@ class ApiController
 
         $this->updater->updateTranslation(
             $file, $format, $domain, $locale, $id,
-            $this->request->request->get('message')
+            $request->get('message')
         );
 
         return new Response();
